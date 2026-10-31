@@ -370,9 +370,9 @@ export default function InteractiveCanvas() {
               height: "430px",
               transform: `scale(${zoom})`,
               transformOrigin: "top left",
+              touchAction: "pan-x pan-y",
             }}
             className="relative"
-            style={{ touchAction: "pan-x pan-y" }}
             onPointerMove={(e) => handlePointerMove(e.clientX, e.clientY)}
             onPointerUp={() => setDraggingId(null)}
             onPointerCancel={() => setDraggingId(null)}
