@@ -101,7 +101,7 @@ export default function NodeInspectorPanel() {
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                 <span>
                   {lang === "fa"
-                    ? `خطر SPOF در «${n.title}»: تعداد پاد (${n.replicas}x) یا بار CPU (${n.cpuLoad}%)!`
+                    ? `ریسک دسترس‌پذیری/ظرفیت در «${n.title}»: تعداد پاد (${n.replicas}x) یا بار CPU (${n.cpuLoad}%)!`
                     : `Availability / Capacity Risk on '${n.title}': Replicas (${n.replicas}x) or CPU (${n.cpuLoad}%)!`}
                 </span>
               </div>
