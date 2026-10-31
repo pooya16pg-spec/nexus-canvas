@@ -333,6 +333,93 @@ function setState(updater: (prev: NexusState) => Partial<NexusState>, shouldBroa
   listeners.forEach((l) => l());
 }
 
+const importTopologySnapshot = (input: unknown): boolean => {
+  if (!input || typeof input !== "object") return false;
+  const value = input as { nodes?: unknown; edges?: unknown };
+  if (
+    !Array.isArray(value.nodes) ||
+    !Array.isArray(value.edges) ||
+    value.nodes.length < 1 ||
+    value.nodes.length > 100 ||
+    value.edges.length > 300
+  ) return false;
+
+  const allowedCategories: NodeCategory[] = ["GATEWAY", "SERVICE", "AI", "DATABASE", "CACHE"];
+  const importedNodes: ArchNode[] = [];
+  const ids = new Set<string>();
+
+  for (const rawNode of value.nodes) {
+    if (!rawNode || typeof rawNode !== "object") return false;
+    const node = rawNode as Partial<ArchNode>;
+    if (
+      typeof node.id !== "string" || !node.id.trim() || ids.has(node.id) ||
+      typeof node.title !== "string" || !node.title.trim() ||
+      typeof node.subtitle !== "string" ||
+      !node.category || !allowedCategories.includes(node.category) ||
+      typeof node.techStack !== "string" ||
+      typeof node.dockerImage !== "string" ||
+      !Number.isFinite(node.x) || !Number.isFinite(node.y) ||
+      !Number.isFinite(node.latencyMs) || (node.latencyMs as number) < 0 ||
+      !Number.isFinite(node.throughputRps) || (node.throughputRps as number) < 0 ||
+      !Number.isFinite(node.cpuLoad) || (node.cpuLoad as number) < 0 || (node.cpuLoad as number) > 100 ||
+      !Number.isInteger(node.replicas) || (node.replicas as number) < 1 || (node.replicas as number) > 50 ||
+      !Number.isInteger(node.port) || (node.port as number) < 1 || (node.port as number) > 65535
+    ) return false;
+    ids.add(node.id);
+    importedNodes.push({
+      id: node.id,
+      title: node.title,
+      subtitle: node.subtitle,
+      category: node.category,
+      x: Math.max(12, Math.min(630, Math.round(node.x as number))),
+      y: Math.max(12, Math.min(315, Math.round(node.y as number))),
+      latencyMs: node.latencyMs as number,
+      throughputRps: node.throughputRps as number,
+      cpuLoad: node.cpuLoad as number,
+      replicas: node.replicas as number,
+      techStack: node.techStack,
+      dockerImage: node.dockerImage,
+      port: node.port as number,
+    });
+  }
+
+  const edgeIds = new Set<string>();
+  const importedEdges: ArchEdge[] = [];
+  for (const rawEdge of value.edges) {
+    if (!rawEdge || typeof rawEdge !== "object") return false;
+    const edge = rawEdge as Partial<ArchEdge>;
+    if (
+      typeof edge.id !== "string" || !edge.id.trim() || edgeIds.has(edge.id) ||
+      typeof edge.from !== "string" || !ids.has(edge.from) ||
+      typeof edge.to !== "string" || !ids.has(edge.to) ||
+      typeof edge.protocol !== "string" || !edge.protocol.trim()
+    ) return false;
+    edgeIds.add(edge.id);
+    importedEdges.push({
+      id: edge.id,
+      from: edge.from,
+      to: edge.to,
+      protocol: edge.protocol,
+    });
+  }
+
+  const firstNode = importedNodes[0];
+  const now = new Date().toLocaleTimeString("en-US", { hour12: false });
+  setState(() => ({
+    nodes: importedNodes,
+    edges: importedEdges,
+    selectedNodeId: firstNode.id,
+    connectingFromId: null,
+    isStressMode: false,
+    stressBaseline: null,
+    telemetryLogs: [
+      `[${now}] SNAPSHOT :: Imported ${importedNodes.length} nodes and ${importedEdges.length} edges from JSON.`,
+      ...globalState.telemetryLogs.slice(0, 10),
+    ],
+  }), true);
+  return true;
+};
+
 const toggleLang = () =>
   setState((s) => ({ lang: s.lang === "fa" ? "en" : "fa" }));
 
@@ -573,5 +660,6 @@ export function useNexusStore() {
     toggleTeamCursors,
     setExportModalOpen,
     setZoom,
+    importTopologySnapshot,
   };
 }
