@@ -335,8 +335,10 @@ function setState(updater: (prev: NexusState) => Partial<NexusState>, shouldBroa
 
 const importTopologySnapshot = (input: unknown): boolean => {
   if (!input || typeof input !== "object") return false;
-  const value = input as { nodes?: unknown; edges?: unknown };
+  const value = input as { schema?: unknown; version?: unknown; nodes?: unknown; edges?: unknown };
   if (
+    value.schema !== "nexus-canvas.graph" ||
+    value.version !== 1 ||
     !Array.isArray(value.nodes) ||
     !Array.isArray(value.edges) ||
     value.nodes.length < 1 ||
