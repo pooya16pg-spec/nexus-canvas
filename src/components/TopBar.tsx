@@ -50,13 +50,13 @@ export default function TopBar() {
               NEXUS SPATIAL STUDIO • LOCAL ANALYZER
             </span>
             <span className="text-slate-400">
-              Throughput:{" "}
+              Modeled throughput:{" "}
               <b className="text-emerald-400">
                 {totalRps.toLocaleString("en-US")} req/s
               </b>
             </span>
             <span className="text-slate-400">
-              Avg Latency: <b className="text-cyan-300">{avgLatency} ms</b>
+              Modeled avg latency: <b className="text-cyan-300">{avgLatency} ms</b>
             </span>
           </div>
 
