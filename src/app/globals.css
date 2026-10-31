@@ -123,3 +123,32 @@ button {
   stroke-dasharray: 10 5;
   animation: dashFlow 0.35s linear infinite;
 }
+/* Mobile and touch ergonomics */
+html {
+  min-width: 320px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  min-width: 320px;
+  min-height: 100svh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-x: none;
+}
+button, a, input, textarea, select { touch-action: manipulation; }
+input, textarea, select { font-size: 16px; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.9);
+  outline-offset: 3px;
+}
+.nexus-card { min-width: 0; }
+.nexus-card input, .nexus-card button { min-height: 40px; }
+@media (max-width: 767px) {
+  .canvas-dots { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .hologram-box { height: 112px; max-height: 112px; }
+  .hologram-blend { height: 112px !important; max-height: 112px !important; }
+  .nexus-card { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
