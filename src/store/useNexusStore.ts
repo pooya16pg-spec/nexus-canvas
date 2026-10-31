@@ -31,7 +31,7 @@ export interface ArchEdge {
 
 interface NexusState {
   lang: Lang;
-  activeTemplate: TemplateId;
+  activeTemplate: TemplateId | "IMPORTED";
   nodes: ArchNode[];
   edges: ArchEdge[];
   selectedNodeId: string;
