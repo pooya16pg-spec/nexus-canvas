@@ -47,7 +47,7 @@ export default function TopBar() {
           <div className="flex items-center gap-3 shrink-0">
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 font-bold">
               <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
-              NEXUS SPATIAL STUDIO v4.0
+              NEXUS SPATIAL STUDIO • LOCAL ANALYZER
             </span>
             <span className="text-slate-400">
               Throughput:{" "}
@@ -176,7 +176,7 @@ export default function TopBar() {
             >
               <Users className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">
-                {lang === "fa" ? "همکاران زنده" : "Live Team"}
+                {lang === "fa" ? "نشانگر نمایشی" : "Demo Cursor"}
               </span>
             </button>
 
