@@ -135,6 +135,11 @@ export default function TopBar() {
           {/* انتخابگر قالب‌های معماری */}
           <div className="flex flex-wrap items-center gap-1.5 bg-[#02040A] p-1.5 rounded-2xl border border-white/10">
             <Layers className="w-4 h-4 text-cyan-400 mx-1.5 hidden sm:inline" />
+            {activeTemplate === "IMPORTED" && (
+              <span className="px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold border border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200">
+                {lang === "fa" ? "گراف واردشده" : "IMPORTED GRAPH"}
+              </span>
+            )}
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
