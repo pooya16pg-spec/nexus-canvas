@@ -273,12 +273,9 @@ export default function InteractiveCanvas() {
               return (
                 <div
                   key={node.id}
-                  onClick={() => selectNode(node.id)}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={isSelected}
-                  onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectNode(node.id); } }}
-                  className={`w-full min-w-0 text-start rounded-2xl bg-[#070C18]/95 border-2 p-3.5 transition-all cursor-pointer ${
+                  role="group"
+                  aria-label={node.title}
+                  className={`w-full min-w-0 text-start rounded-2xl bg-[#070C18]/95 border-2 p-3.5 transition-all ${
                     isSelected
                       ? `${st.border} ${st.glow}`
                       : "border-white/15 hover:border-white/35"
@@ -295,23 +292,21 @@ export default function InteractiveCanvas() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="p-2 rounded-xl bg-white/5">
-                        <Icon
-                          className="w-5 h-5"
-                          style={{ color: st.colorHex }}
-                        />
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => selectNode(node.id)}
+                      aria-pressed={isSelected}
+                      className="w-full min-h-11 flex items-center gap-2.5 rounded-xl text-start bg-transparent border-0 hover:bg-white/5 px-1"
+                    >
+                      <div className="p-2 rounded-xl bg-white/5 shrink-0">
+                        <Icon className="w-5 h-5" style={{ color: st.colorHex }} />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-white truncate">
-                          {node.title}
-                        </div>
-                        <div className="text-[11px] text-slate-400 truncate">
-                          {node.subtitle}
-                        </div>
+                        <div className="text-sm font-bold text-white truncate">{node.title}</div>
+                        <div className="text-[11px] text-slate-400 truncate">{node.subtitle}</div>
                       </div>
-                    </div>
+                    </button>
                   </div>
 
                   {/* دکمه‌های تغییر سریع تعداد پادها روی موبایل */}
