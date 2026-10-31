@@ -41,6 +41,7 @@ interface NexusState {
   isExportModalOpen: boolean;
   zoom: number;
   telemetryLogs: string[];
+  stressBaseline: Record<string, { throughputRps: number; cpuLoad: number }> | null;
 }
 
 const TEMPLATES: Record<TemplateId, { nodes: ArchNode[]; edges: ArchEdge[] }> = {
@@ -284,10 +285,11 @@ let globalState: NexusState = {
   isExportModalOpen: false,
   zoom: 1,
   telemetryLogs: [
-    "[TOPOLOGY-OK] Directed acyclic service path verified • Critical Path: 32.7ms",
-    "[MULTI-TAB] BroadcastChannel('nexus_canvas_sync_v1') active across browser tabs",
-    "[SPOF-AUDIT] All nodes running >= 3 replicas (High-Availability verified)",
+    "[LOCAL-ANALYSIS] Seed topology loaded; metrics are illustrative, not live infrastructure telemetry.",
+    "[LOCAL-SYNC] BroadcastChannel sync is limited to same-origin tabs in this browser.",
+    "[EXPORT] Compose output is a deployment template; validate images, ports, and dependencies before use.",
   ],
+  stressBaseline: null,
 };
 
 const listeners = new Set<() => void>();
@@ -302,6 +304,8 @@ if (typeof window !== "undefined" && "BroadcastChannel" in window) {
         nodes: event.data.nodes,
         edges: event.data.edges,
         activeTemplate: event.data.activeTemplate,
+        isStressMode: Boolean(event.data.isStressMode),
+        stressBaseline: event.data.stressBaseline || null,
       };
       listeners.forEach((l) => l());
     }
@@ -316,6 +320,8 @@ function broadcastCurrentTopology() {
         nodes: globalState.nodes,
         edges: globalState.edges,
         activeTemplate: globalState.activeTemplate,
+        isStressMode: globalState.isStressMode,
+        stressBaseline: globalState.stressBaseline,
       });
     } catch {}
   }
@@ -336,6 +342,8 @@ const loadTemplate = (id: TemplateId) =>
     const now = new Date().toLocaleTimeString("en-US", { hour12: false });
     return {
       activeTemplate: id,
+      isStressMode: false,
+      stressBaseline: null,
       nodes: tpl.nodes.map((n) => ({ ...n })),
       edges: tpl.edges.map((e) => ({ ...e })),
       selectedNodeId: tpl.nodes[0].id,
@@ -349,6 +357,9 @@ const loadTemplate = (id: TemplateId) =>
 
 const selectNode = (id: string) =>
   setState((s) => {
+    if (s.connectingFromId === id) {
+      return { connectingFromId: null, selectedNodeId: id };
+    }
     if (s.connectingFromId && s.connectingFromId !== id) {
       const exists = s.edges.some(
         (e) =>
@@ -395,7 +406,7 @@ const updateSelectedNode = (patch: Partial<ArchNode>) =>
 
 const addNode = (category: NodeCategory) =>
   setState((s) => {
-    const id = `node-${Math.floor(100 + Math.random() * 900)}`;
+    const id = `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const defaults: Record<
       NodeCategory,
       { title: string; image: string; port: number; stack: string }
@@ -490,23 +501,39 @@ const toggleStressMode = () =>
   setState((s) => {
     const next = !s.isStressMode;
     const now = new Date().toLocaleTimeString("en-US", { hour12: false });
+
+    if (next) {
+      const baseline = Object.fromEntries(
+        s.nodes.map((node) => [
+          node.id,
+          { throughputRps: node.throughputRps, cpuLoad: node.cpuLoad },
+        ])
+      );
+      return {
+        isStressMode: true,
+        stressBaseline: baseline,
+        nodes: s.nodes.map((node) => ({
+          ...node,
+          throughputRps: Math.round(node.throughputRps * 2.2),
+          cpuLoad: Math.min(94, node.cpuLoad + 26),
+        })),
+        telemetryLogs: [
+          `[${now}] LOAD-SIM :: Local 2.2x traffic stress simulation enabled.`,
+          ...s.telemetryLogs.slice(0, 10),
+        ],
+      };
+    }
+
+    const baseline = s.stressBaseline || {};
     return {
-      isStressMode: next,
-      nodes: s.nodes.map((n) => ({
-        ...n,
-        throughputRps: next
-          ? Math.round(n.throughputRps * 2.2)
-          : Math.round(n.throughputRps / 2.2),
-        cpuLoad: next
-          ? Math.min(94, n.cpuLoad + 26)
-          : Math.max(18, n.cpuLoad - 26),
+      isStressMode: false,
+      stressBaseline: null,
+      nodes: s.nodes.map((node) => ({
+        ...node,
+        ...(baseline[node.id] || {}),
       })),
       telemetryLogs: [
-        `[${now}] LOAD-SIM :: ${
-          next
-            ? "🔥 Local 2.2x Traffic Simulation enabled (Testing SPOF & CPU thresholds)"
-            : "✅ Simulated traffic load returned to baseline."
-        }`,
+        `[${now}] LOAD-SIM :: Baseline metrics restored exactly.`,
         ...s.telemetryLogs.slice(0, 10),
       ],
     };
