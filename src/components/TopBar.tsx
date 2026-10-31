@@ -125,8 +125,8 @@ export default function TopBar() {
                 </div>
                 <div className="text-[10px] text-cyan-300 font-mono">
                   {lang === "fa"
-                    ? "معمار سیستم‌های توزیع‌شده و UI/UX"
-                    : "Distributed Systems & UI Architect"}
+                    ? "مهندسی کامپیوتر • سازندهٔ محصول"
+                    : "Computer Engineering • Product Builder"}
                 </div>
               </div>
             </div>
@@ -135,6 +135,11 @@ export default function TopBar() {
           {/* انتخابگر قالب‌های معماری */}
           <div className="flex flex-wrap items-center gap-1.5 bg-[#02040A] p-1.5 rounded-2xl border border-white/10">
             <Layers className="w-4 h-4 text-cyan-400 mx-1.5 hidden sm:inline" />
+            {activeTemplate === "IMPORTED" && (
+              <span className="px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold border border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200">
+                {lang === "fa" ? "گراف واردشده" : "IMPORTED GRAPH"}
+              </span>
+            )}
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
@@ -160,8 +165,8 @@ export default function TopBar() {
               <span>
                 {isStressMode
                   ? lang === "fa"
-                    ? "تست بار: فعال (2.4x)"
-                    : "Stress Load: ON"
+                    ? "تست بار: فعال (2.2x)"
+                    : "Stress Load: ON (2.2x)"
                   : lang === "fa"
                   ? "شبیه‌سازی ترافیک سنگین"
                   : "Simulate Traffic Spike"}

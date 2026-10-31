@@ -168,6 +168,7 @@ export default function InteractiveCanvas() {
 
           {(
             [
+              { cat: "GATEWAY", label: lang === "fa" ? "+ درگاه" : "+ Gateway" },
               { cat: "SERVICE", label: lang === "fa" ? "+ سرویس" : "+ Service" },
               { cat: "AI", label: lang === "fa" ? "+ نود AI" : "+ AI Node" },
               { cat: "DATABASE", label: lang === "fa" ? "+ دیتابیس" : "+ DB" },

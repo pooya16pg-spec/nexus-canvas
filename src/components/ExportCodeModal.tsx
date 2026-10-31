@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNexusStore } from "../store/useNexusStore";
-import { Check, Copy, X, Code2 } from "lucide-react";
+import { Check, Copy, X, Code2, Download, Upload, FileJson } from "lucide-react";
 
 export default function ExportCodeModal() {
-  const { lang, nodes, edges, isExportModalOpen, setExportModalOpen } =
+  const { lang, nodes, edges, isExportModalOpen, setExportModalOpen, importTopologySnapshot } =
     useNexusStore();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
+  const [importError, setImportError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!isExportModalOpen) return null;
 
@@ -98,6 +101,49 @@ export default function ExportCodeModal() {
     "",
   ].join("\n");
 
+  const graphSnapshotJson = JSON.stringify({
+    schema: "nexus-canvas.graph",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    nodes,
+    edges,
+  }, null, 2);
+
+  const handleDownloadJson = () => {
+    const blob = new Blob([graphSnapshotJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "nexus-canvas-architecture.json";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleCopyJson = async () => {
+    try {
+      await navigator.clipboard.writeText(graphSnapshotJson);
+      setCopiedJson(true);
+      window.setTimeout(() => setCopiedJson(false), 2500);
+    } catch {
+      setCopyError(true);
+    }
+  };
+
+  const handleImportJson = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const parsed: unknown = JSON.parse(await file.text());
+      if (!importTopologySnapshot(parsed)) throw new Error("Invalid graph snapshot");
+      setImportError(false);
+      setCopyError(false);
+    } catch {
+      setImportError(true);
+    } finally {
+      input.value = "";
+    }
+  };
   const handleCopy = async () => {
     if (!canExport) return;
     try {
@@ -133,6 +179,12 @@ export default function ExportCodeModal() {
             <X className="w-4 h-4" />
           </button>
         </div>
+        <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={handleImportJson} className="hidden" />
+        {importError && (
+          <p role="alert" className="text-xs text-rose-300">
+            {lang === "fa" ? "فایل JSON معتبر نیست یا به ساختار گراف NexusCanvas تعلق ندارد." : "Invalid JSON snapshot or unsupported graph schema."}
+          </p>
+        )}
         {copyError && (
           <p role="alert" className="text-xs text-rose-300">
             {lang === "fa" ? "کپی خودکار ناموفق بود؛ مجوز Clipboard مرورگر را بررسی کنید." : "Clipboard access failed. Check browser clipboard permission."}
@@ -153,12 +205,22 @@ export default function ExportCodeModal() {
           {dockerComposeCode}
         </pre>
 
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={handleCopy}
-            disabled={!canExport}
-            className="btn-nexus-emerald px-4 py-2 rounded-xl font-mono text-xs font-bold flex items-center gap-1.5"
-          >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-nexus px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+              <Upload className="w-3.5 h-3.5" />
+              <span>{lang === "fa" ? "درون‌ریزی JSON" : "Import JSON"}</span>
+            </button>
+            <button type="button" onClick={handleDownloadJson} className="btn-nexus px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+              <Download className="w-3.5 h-3.5" />
+              <span>{lang === "fa" ? "دانلود Snapshot" : "Download JSON"}</span>
+            </button>
+            <button type="button" onClick={handleCopyJson} className="btn-nexus px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
+              <FileJson className="w-3.5 h-3.5" />
+              <span>{copiedJson ? "Copied JSON!" : lang === "fa" ? "کپی JSON" : "Copy JSON"}</span>
+            </button>
+          </div>
+          <button onClick={handleCopy} disabled={!canExport} className="btn-nexus-emerald px-4 py-2 rounded-xl font-mono text-xs font-bold flex items-center gap-1.5">
             {copied ? (
               <>
                 <Check className="w-4 h-4" />
