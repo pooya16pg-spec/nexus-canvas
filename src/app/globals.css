@@ -152,3 +152,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+@media (max-width: 767px) {
+  .canvas-dots { touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch; }
+  .canvas-dots [data-canvas-node] { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .nexus-card { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 767px) {
+  .nexus-card button, header button { min-height: 40px; }
+  .nexus-card input, .nexus-card select { min-height: 42px; }
+  .canvas-dots { overscroll-behavior: contain; }
+}
+@media (hover: none) { .btn-nexus:hover { transform: none; } }

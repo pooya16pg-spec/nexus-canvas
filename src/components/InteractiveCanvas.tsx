@@ -370,17 +370,12 @@ export default function InteractiveCanvas() {
               height: "430px",
               transform: `scale(${zoom})`,
               transformOrigin: "top left",
+              touchAction: "pan-x pan-y",
             }}
             className="relative"
-            onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
-            onMouseUp={() => setDraggingId(null)}
-            onMouseLeave={() => setDraggingId(null)}
-            onTouchMove={(e) => {
-              if (e.touches.length > 0) {
-                handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
-              }
-            }}
-            onTouchEnd={() => setDraggingId(null)}
+            onPointerMove={(e) => handlePointerMove(e.clientX, e.clientY)}
+            onPointerUp={() => setDraggingId(null)}
+            onPointerCancel={() => setDraggingId(null)}
           >
             <svg
               width="840"
@@ -458,19 +453,11 @@ export default function InteractiveCanvas() {
                     top: `${node.y}px`,
                     width: `${NODE_W}px`,
                   }}
-                  onMouseDown={(e) =>
-                    startDrag(e.clientX, e.clientY, node.id, node.x, node.y)
-                  }
-                  onTouchStart={(e) => {
-                    if (e.touches.length > 0) {
-                      startDrag(
-                        e.touches[0].clientX,
-                        e.touches[0].clientY,
-                        node.id,
-                        node.x,
-                        node.y
-                      );
-                    }
+                  data-canvas-node="true"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    startDrag(e.clientX, e.clientY, node.id, node.x, node.y);
                   }}
                   className={`absolute rounded-2xl bg-[#070C18]/95 border-2 p-3 cursor-grab active:cursor-grabbing transition-shadow ${
                     isSelected
