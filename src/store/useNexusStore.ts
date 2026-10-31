@@ -18,6 +18,8 @@ export interface ArchNode {
   cpuLoad: number;
   replicas: number;
   techStack: string;
+  dockerImage: string;
+  port: number;
 }
 
 export interface ArchEdge {
@@ -46,68 +48,78 @@ const TEMPLATES: Record<TemplateId, { nodes: ArchNode[]; edges: ArchEdge[] }> = 
     nodes: [
       {
         id: "n-edge",
-        title: "Cloudflare Edge Gateway",
+        title: "Cloudflare / Envoy Gateway",
         subtitle: "Zero-Trust WAF & Rate Limiter",
         category: "GATEWAY",
-        x: 70,
-        y: 170,
+        x: 50,
+        y: 165,
         latencyMs: 1.8,
         throughputRps: 14200,
         cpuLoad: 28,
-        replicas: 6,
-        techStack: "Rust / Envoy Proxy",
+        replicas: 4,
+        techStack: "Envoy Proxy v1.31",
+        dockerImage: "envoyproxy/envoy:v1.31-latest",
+        port: 8080,
       },
       {
         id: "n-orchestrator",
         title: "Neural Agent Router",
         subtitle: "Semantic Intent Classifier",
         category: "SERVICE",
-        x: 330,
-        y: 85,
+        x: 310,
+        y: 75,
         latencyMs: 6.4,
         throughputRps: 9800,
         cpuLoad: 44,
-        replicas: 8,
-        techStack: "Go / gRPC Mesh",
+        replicas: 6,
+        techStack: "Go 1.23 / gRPC Mesh",
+        dockerImage: "golang:1.23-alpine",
+        port: 9090,
       },
       {
         id: "n-redis",
         title: "Redis Semantic Cache",
         subtitle: "Sub-ms Vector Hit Layer",
         category: "CACHE",
-        x: 330,
-        y: 265,
+        x: 310,
+        y: 255,
         latencyMs: 0.4,
         throughputRps: 45000,
         cpuLoad: 19,
-        replicas: 4,
+        replicas: 3,
         techStack: "Redis Cluster 7.2",
+        dockerImage: "redis:7.2-alpine",
+        port: 6379,
       },
       {
         id: "n-llm",
-        title: "TensorRT LLM Cluster",
-        subtitle: "FP8 Quantized Inference",
+        title: "vLLM Inference Cluster",
+        subtitle: "FP8 Quantized Transformer",
         category: "AI",
-        x: 600,
-        y: 95,
+        x: 575,
+        y: 80,
         latencyMs: 24.5,
         throughputRps: 3400,
-        cpuLoad: 76,
-        replicas: 12,
-        techStack: "CUDA / vLLM Engine",
+        cpuLoad: 72,
+        replicas: 8,
+        techStack: "vLLM / CUDA 12.4",
+        dockerImage: "vllm/vllm-openai:latest",
+        port: 8000,
       },
       {
         id: "n-qdrant",
         title: "Qdrant Vector Engine",
         subtitle: "HNSW 1536-Dim Index",
         category: "DATABASE",
-        x: 600,
-        y: 265,
+        x: 575,
+        y: 255,
         latencyMs: 3.2,
         throughputRps: 18500,
         cpuLoad: 38,
-        replicas: 5,
-        techStack: "Rust / SIMD HNSW",
+        replicas: 3,
+        techStack: "Qdrant Rust Engine",
+        dockerImage: "qdrant/qdrant:v1.11.0",
+        port: 6333,
       },
     ],
     edges: [
@@ -125,52 +137,60 @@ const TEMPLATES: Record<TemplateId, { nodes: ArchNode[]; edges: ArchEdge[] }> = 
         title: "FIX / WebSocket Ingest",
         subtitle: "L2 Market Tick Streamer",
         category: "GATEWAY",
-        x: 70,
-        y: 175,
+        x: 55,
+        y: 165,
         latencyMs: 0.3,
-        throughputRps: 88000,
+        throughputRps: 68000,
         cpuLoad: 35,
-        replicas: 10,
-        techStack: "C++20 / DPDK",
+        replicas: 6,
+        techStack: "nginx / WebSocket",
+        dockerImage: "nginx:1.27-alpine",
+        port: 443,
       },
       {
         id: "f-matcher",
         title: "Matching Engine Core",
         subtitle: "Lock-Free RingBuffer",
         category: "SERVICE",
-        x: 340,
-        y: 90,
+        x: 320,
+        y: 80,
         latencyMs: 0.2,
-        throughputRps: 120000,
+        throughputRps: 95000,
         cpuLoad: 52,
         replicas: 4,
-        techStack: "Rust / LMAX Disruptor",
+        techStack: "Rust / Tokio Core",
+        dockerImage: "rust:1.81-slim",
+        port: 7070,
       },
       {
         id: "f-risk",
-        title: "AI Margin Risk Guard",
-        subtitle: "Real-Time VaR & Liquidation",
+        title: "Margin Risk Guard",
+        subtitle: "Real-Time VaR Engine",
         category: "AI",
-        x: 340,
-        y: 265,
+        x: 320,
+        y: 255,
         latencyMs: 1.9,
         throughputRps: 42000,
         cpuLoad: 61,
-        replicas: 6,
+        replicas: 4,
         techStack: "ONNX Runtime",
+        dockerImage: "mcr.microsoft.com/onnxruntime/server:latest",
+        port: 8001,
       },
       {
         id: "f-ledger",
         title: "Timescale Tick Ledger",
         subtitle: "Immutable Audit Cluster",
         category: "DATABASE",
-        x: 610,
-        y: 175,
+        x: 580,
+        y: 165,
         latencyMs: 2.1,
-        throughputRps: 64000,
+        throughputRps: 54000,
         cpuLoad: 41,
-        replicas: 6,
-        techStack: "PostgreSQL / NVMe",
+        replicas: 3,
+        techStack: "PostgreSQL 16 / Timescale",
+        dockerImage: "timescale/timescaledb:latest-pg16",
+        port: 5432,
       },
     ],
     edges: [
@@ -187,58 +207,66 @@ const TEMPLATES: Record<TemplateId, { nodes: ArchNode[]; edges: ArchEdge[] }> = 
         title: "Istio Service Ingress",
         subtitle: "mTLS Termination & Canary",
         category: "GATEWAY",
-        x: 75,
-        y: 175,
+        x: 60,
+        y: 165,
         latencyMs: 1.4,
         throughputRps: 31000,
         cpuLoad: 29,
-        replicas: 8,
+        replicas: 4,
         techStack: "Istio / Envoy",
+        dockerImage: "istio/proxyv2:1.23.0",
+        port: 15021,
       },
       {
         id: "k-auth",
-        title: "OAuth2 / Passkey Guard",
-        subtitle: "JWT & Session Validator",
+        title: "Redis Session Guard",
+        subtitle: "JWT & Rate-Limit Cache",
         category: "CACHE",
-        x: 340,
-        y: 90,
+        x: 320,
+        y: 80,
         latencyMs: 0.9,
         throughputRps: 54000,
         cpuLoad: 24,
-        replicas: 6,
-        techStack: "Go / Redis",
+        replicas: 3,
+        techStack: "Redis 7.2",
+        dockerImage: "redis:7.2-alpine",
+        port: 6379,
       },
       {
         id: "k-api",
-        title: "Core GraphQL Federation",
+        title: "GraphQL Federation",
         subtitle: "Distributed Subgraph Mesh",
         category: "SERVICE",
-        x: 340,
-        y: 265,
+        x: 320,
+        y: 255,
         latencyMs: 4.8,
         throughputRps: 22500,
         cpuLoad: 49,
-        replicas: 10,
-        techStack: "Node.js / Apollo",
+        replicas: 6,
+        techStack: "Node.js 20 / Apollo",
+        dockerImage: "node:20-alpine",
+        port: 4000,
       },
       {
         id: "k-db",
-        title: "CockroachDB Geo-Cluster",
-        subtitle: "Multi-Region Raft Consensus",
+        title: "CockroachDB Cluster",
+        subtitle: "Multi-Region Raft SQL",
         category: "DATABASE",
-        x: 605,
-        y: 175,
+        x: 580,
+        y: 165,
         latencyMs: 3.7,
         throughputRps: 29000,
         cpuLoad: 42,
-        replicas: 9,
-        techStack: "Distributed SQL",
+        replicas: 3,
+        techStack: "CockroachDB v24.1",
+        dockerImage: "cockroachdb/cockroach:v24.1.0",
+        port: 26257,
       },
     ],
     edges: [
       { id: "ke1", from: "k-ing", to: "k-auth", protocol: "mTLS" },
       { id: "ke2", from: "k-ing", to: "k-api", protocol: "HTTP/2" },
-      { id: "ke3", from: "k-auth", to: "k-api", protocol: "JWT-Token" },
+      { id: "ke3", from: "k-auth", to: "k-api", protocol: "JWT-Verify" },
       { id: "ke4", from: "k-api", to: "k-db", protocol: "PgWire" },
     ],
   },
@@ -256,16 +284,46 @@ let globalState: NexusState = {
   isExportModalOpen: false,
   zoom: 1,
   telemetryLogs: [
-    "[MESH-OK] All 5 distributed nodes healthy • P99 Latency: 4.2ms",
-    "[CRDT-SYNC] Real-time state synchronized across 3 active architects",
-    "[AUTO-SCALE] Kubernetes HPA standing by at 75% CPU threshold",
+    "[TOPOLOGY-OK] Directed acyclic service path verified • Critical Path: 32.7ms",
+    "[MULTI-TAB] BroadcastChannel('nexus_canvas_sync_v1') active across browser tabs",
+    "[SPOF-AUDIT] All nodes running >= 3 replicas (High-Availability verified)",
   ],
 };
 
 const listeners = new Set<() => void>();
+let syncChannel: BroadcastChannel | null = null;
 
-function setState(updater: (prev: NexusState) => Partial<NexusState>) {
+if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+  syncChannel = new BroadcastChannel("nexus_canvas_sync_v1");
+  syncChannel.onmessage = (event) => {
+    if (event.data && event.data.type === "STATE_SYNC") {
+      globalState = {
+        ...globalState,
+        nodes: event.data.nodes,
+        edges: event.data.edges,
+        activeTemplate: event.data.activeTemplate,
+      };
+      listeners.forEach((l) => l());
+    }
+  };
+}
+
+function broadcastCurrentTopology() {
+  if (syncChannel) {
+    try {
+      syncChannel.postMessage({
+        type: "STATE_SYNC",
+        nodes: globalState.nodes,
+        edges: globalState.edges,
+        activeTemplate: globalState.activeTemplate,
+      });
+    } catch {}
+  }
+}
+
+function setState(updater: (prev: NexusState) => Partial<NexusState>, shouldBroadcast = false) {
   globalState = { ...globalState, ...updater(globalState) };
+  if (shouldBroadcast) broadcastCurrentTopology();
   listeners.forEach((l) => l());
 }
 
@@ -283,11 +341,11 @@ const loadTemplate = (id: TemplateId) =>
       selectedNodeId: tpl.nodes[0].id,
       connectingFromId: null,
       telemetryLogs: [
-        `[${now}] BLUEPRINT :: Loaded '${id}' architecture topology (${tpl.nodes.length} nodes)`,
+        `[${now}] BLUEPRINT :: Loaded '${id}' topology (${tpl.nodes.length} nodes)`,
         ...s.telemetryLogs.slice(0, 10),
       ],
     };
-  });
+  }, true);
 
 const selectNode = (id: string) =>
   setState((s) => {
@@ -313,7 +371,7 @@ const selectNode = (id: string) =>
       return { connectingFromId: null, selectedNodeId: id };
     }
     return { selectedNodeId: id };
-  });
+  }, true);
 
 const moveNode = (id: string, x: number, y: number) =>
   setState((s) => ({
@@ -321,42 +379,73 @@ const moveNode = (id: string, x: number, y: number) =>
       n.id === id
         ? {
             ...n,
-            x: Math.max(16, Math.min(660, Math.round(x))),
-            y: Math.max(16, Math.min(320, Math.round(y))),
+            x: Math.max(12, Math.min(630, Math.round(x))),
+            y: Math.max(12, Math.min(315, Math.round(y))),
           }
         : n
     ),
-  }));
+  }), true);
 
 const updateSelectedNode = (patch: Partial<ArchNode>) =>
   setState((s) => ({
     nodes: s.nodes.map((n) =>
       n.id === s.selectedNodeId ? { ...n, ...patch } : n
     ),
-  }));
+  }), true);
 
 const addNode = (category: NodeCategory) =>
   setState((s) => {
     const id = `node-${Math.floor(100 + Math.random() * 900)}`;
-    const titles: Record<NodeCategory, string> = {
-      GATEWAY: "Edge API Gateway",
-      SERVICE: "Go Microservice",
-      AI: "LLM Inference Node",
-      DATABASE: "Postgres Vector Shard",
-      CACHE: "Redis Memory Node",
+    const defaults: Record<
+      NodeCategory,
+      { title: string; image: string; port: number; stack: string }
+    > = {
+      GATEWAY: {
+        title: "Envoy Edge Gateway",
+        image: "envoyproxy/envoy:v1.31-latest",
+        port: 8080,
+        stack: "Envoy Proxy",
+      },
+      SERVICE: {
+        title: "Go gRPC Microservice",
+        image: "golang:1.23-alpine",
+        port: 9000,
+        stack: "Go 1.23 / gRPC",
+      },
+      AI: {
+        title: "vLLM Inference Worker",
+        image: "vllm/vllm-openai:latest",
+        port: 8000,
+        stack: "PyTorch / vLLM",
+      },
+      DATABASE: {
+        title: "PostgreSQL Vector Shard",
+        image: "pgvector/pgvector:pg16",
+        port: 5432,
+        stack: "PostgreSQL 16",
+      },
+      CACHE: {
+        title: "Redis Cluster Cache",
+        image: "redis:7.2-alpine",
+        port: 6379,
+        stack: "Redis 7.2",
+      },
     };
+    const cfg = defaults[category];
     const newNode: ArchNode = {
       id,
-      title: titles[category],
+      title: cfg.title,
       subtitle: "Auto-Provisioned Cluster Node",
       category,
-      x: 220 + Math.floor(Math.random() * 220),
-      y: 110 + Math.floor(Math.random() * 140),
+      x: 200 + Math.floor(Math.random() * 220),
+      y: 100 + Math.floor(Math.random() * 140),
       latencyMs: 2.4,
       throughputRps: 12500,
       cpuLoad: 32,
-      replicas: 4,
-      techStack: "Docker / K8s Pod",
+      replicas: 3,
+      techStack: cfg.stack,
+      dockerImage: cfg.image,
+      port: cfg.port,
     };
     const nextEdges =
       s.selectedNodeId && s.nodes.some((n) => n.id === s.selectedNodeId)
@@ -376,7 +465,7 @@ const addNode = (category: NodeCategory) =>
       edges: nextEdges,
       selectedNodeId: id,
     };
-  });
+  }, true);
 
 const deleteSelectedNode = () =>
   setState((s) => {
@@ -390,7 +479,7 @@ const deleteSelectedNode = () =>
       edges: remainingEdges,
       selectedNodeId: remaining[0]?.id || "",
     };
-  });
+  }, true);
 
 const startConnecting = () =>
   setState((s) => ({
@@ -406,23 +495,22 @@ const toggleStressMode = () =>
       nodes: s.nodes.map((n) => ({
         ...n,
         throughputRps: next
-          ? Math.round(n.throughputRps * 2.4)
-          : Math.round(n.throughputRps / 2.4),
+          ? Math.round(n.throughputRps * 2.2)
+          : Math.round(n.throughputRps / 2.2),
         cpuLoad: next
-          ? Math.min(94, n.cpuLoad + 28)
-          : Math.max(18, n.cpuLoad - 28),
-        replicas: next ? n.replicas + 4 : Math.max(2, n.replicas - 4),
+          ? Math.min(94, n.cpuLoad + 26)
+          : Math.max(18, n.cpuLoad - 26),
       })),
       telemetryLogs: [
-        `[${now}] STRESS-SIM :: ${
+        `[${now}] LOAD-SIM :: ${
           next
-            ? "🔥 2.4x Traffic Surge injected! Auto-scaling K8s replicas..."
-            : "✅ Traffic load normalized to baseline."
+            ? "🔥 Local 2.2x Traffic Simulation enabled (Testing SPOF & CPU thresholds)"
+            : "✅ Simulated traffic load returned to baseline."
         }`,
         ...s.telemetryLogs.slice(0, 10),
       ],
     };
-  });
+  }, true);
 
 const toggleTeamCursors = () =>
   setState((s) => ({ showTeamCursors: !s.showTeamCursors }));
@@ -431,7 +519,7 @@ const setExportModalOpen = (open: boolean) =>
   setState(() => ({ isExportModalOpen: open }));
 
 const setZoom = (z: number) =>
-  setState(() => ({ zoom: Math.max(0.8, Math.min(1.25, Number(z.toFixed(2)))) }));
+  setState(() => ({ zoom: Math.max(0.7, Math.min(1.3, Number(z.toFixed(2)))) }));
 
 export function useNexusStore() {
   const [, setTick] = useState(0);

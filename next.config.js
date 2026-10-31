@@ -6,12 +6,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   basePath: isProd ? "/nexus-canvas" : "",
   assetPrefix: isProd ? "/nexus-canvas" : "",
 };
