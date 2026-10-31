@@ -6,7 +6,7 @@
 NexusCanvas is a client-side architecture workspace for sketching service topologies, checking structural risks, and exporting portable starter artifacts.
 
 ## Design and inspect
-- Create gateways, services, AI workers, databases, and caches; move nodes and connect dependencies.
+- Create gateways, services, AI workers, databases, and caches directly from the canvas toolbar; move nodes and connect dependencies.
 - Switch between an interactive 2D canvas and a mobile-friendly rack view.
 - Inspect under-replicated or overloaded services, isolated/unreachable nodes, missing edge endpoints, dependency cycles, and modeled database/cache bottlenecks.
 - Compute a longest dependency-path latency only when the graph is acyclic.
