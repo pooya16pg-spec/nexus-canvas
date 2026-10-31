@@ -12,12 +12,14 @@ export default function ExportCodeModal() {
 
   if (!isExportModalOpen) return null;
 
+  // Export names follow the editable node title; IDs remain the stable graph references.
   const serviceNames = new Map<string, string>();
-  nodes.forEach((node) => {
-    serviceNames.set(
-      node.id,
-      node.id.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()
-    );
+  nodes.forEach((node, index) => {
+    const slug = (value: string) =>
+      value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const serviceName =
+      slug(node.title) || slug(node.id) || `service-${index + 1}`;
+    serviceNames.set(node.id, serviceName);
   });
   const serviceKeys = Array.from(serviceNames.values());
   const hasDuplicateServiceNames =
@@ -69,7 +71,8 @@ export default function ExportCodeModal() {
   // Compose scales replicas via --scale; omit fixed host ports and container_name
   // so multiple replicas can start without port/name collisions.
   const dockerComposeCode = [
-    "# Generated locally by NexusCanvas. Review images and service dependencies before deployment.",
+    "# Generated locally by NexusCanvas. Service keys are derived from editable node names.",
+    "# Review images and dependencies before deployment.",
     "services:",
     ...nodes.flatMap((node) => {
       const serviceName = serviceNames.get(node.id) as string;
