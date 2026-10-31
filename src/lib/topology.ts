@@ -14,7 +14,8 @@ export function analyzeTopology(
   nodes: ArchNode[],
   edges: ArchEdge[]
 ): TopologyAnalysis {
-  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const byId = new Map<string, ArchNode>();
+  nodes.forEach((node) => byId.set(node.id, node));
   const ids = nodes.map((node) => node.id);
   const validEdges = edges.filter(
     (edge) => byId.has(edge.from) && byId.has(edge.to)
