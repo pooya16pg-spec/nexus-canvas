@@ -125,8 +125,8 @@ export default function TopBar() {
                 </div>
                 <div className="text-[10px] text-cyan-300 font-mono">
                   {lang === "fa"
-                    ? "معمار سیستم‌های توزیع‌شده و UI/UX"
-                    : "Distributed Systems & UI Architect"}
+                    ? "مهندسی کامپیوتر • سازندهٔ محصول"
+                    : "Computer Engineering • Product Builder"}
                 </div>
               </div>
             </div>
@@ -160,8 +160,8 @@ export default function TopBar() {
               <span>
                 {isStressMode
                   ? lang === "fa"
-                    ? "تست بار: فعال (2.4x)"
-                    : "Stress Load: ON"
+                    ? "تست بار: فعال (2.2x)"
+                    : "Stress Load: ON (2.2x)"
                   : lang === "fa"
                   ? "شبیه‌سازی ترافیک سنگین"
                   : "Simulate Traffic Spike"}
