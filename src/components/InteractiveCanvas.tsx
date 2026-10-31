@@ -91,9 +91,15 @@ export default function InteractiveCanvas() {
   const [botTick, setBotTick] = useState(0);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setViewMode("MOBILE_DECK");
-    }
+    const media = window.matchMedia("(max-width: 767px)");
+    const syncView = () => setViewMode(media.matches ? "MOBILE_DECK" : "CANVAS");
+    syncView();
+    if (media.addEventListener) media.addEventListener("change", syncView);
+    else media.addListener(syncView);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener("change", syncView);
+      else media.removeListener(syncView);
+    };
   }, []);
 
   useEffect(() => {
@@ -239,9 +245,9 @@ export default function InteractiveCanvas() {
       {viewMode === "MOBILE_DECK" ? (
         <div
           dir={lang === "fa" ? "rtl" : "ltr"}
-          className="space-y-3 max-h-[460px] overflow-y-auto pr-1"
+          className="space-y-3 pr-1"
         >
-          <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/30 text-xs text-cyan-200 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-400/30 text-xs text-cyan-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <span>
               {lang === "fa"
                 ? "📱 نمای رک تعاملی موبایل: روی هر نود بزن تا انتخاب، متصل یا مقیاس‌دهی (Scale) شود."
@@ -267,8 +273,9 @@ export default function InteractiveCanvas() {
               return (
                 <div
                   key={node.id}
-                  onClick={() => selectNode(node.id)}
-                  className={`rounded-2xl bg-[#070C18]/95 border-2 p-3.5 transition-all cursor-pointer ${
+                  role="group"
+                  aria-label={node.title}
+                  className={`w-full min-w-0 text-start rounded-2xl bg-[#070C18]/95 border-2 p-3.5 transition-all ${
                     isSelected
                       ? `${st.border} ${st.glow}`
                       : "border-white/15 hover:border-white/35"
@@ -285,23 +292,21 @@ export default function InteractiveCanvas() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="p-2 rounded-xl bg-white/5">
-                        <Icon
-                          className="w-5 h-5"
-                          style={{ color: st.colorHex }}
-                        />
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => selectNode(node.id)}
+                      aria-pressed={isSelected}
+                      className="w-full min-h-11 flex items-center gap-2.5 rounded-xl text-start bg-transparent border-0 hover:bg-white/5 px-1"
+                    >
+                      <div className="p-2 rounded-xl bg-white/5 shrink-0">
+                        <Icon className="w-5 h-5" style={{ color: st.colorHex }} />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-white truncate">
-                          {node.title}
-                        </div>
-                        <div className="text-[11px] text-slate-400 truncate">
-                          {node.subtitle}
-                        </div>
+                        <div className="text-sm font-bold text-white truncate">{node.title}</div>
+                        <div className="text-[11px] text-slate-400 truncate">{node.subtitle}</div>
                       </div>
-                    </div>
+                    </button>
                   </div>
 
                   {/* دکمه‌های تغییر سریع تعداد پادها روی موبایل */}
@@ -356,7 +361,7 @@ export default function InteractiveCanvas() {
         /* حالت دوم: بوم گرافیکی ۲بعدی با زوم اصلاح‌شده */
         <div
           dir="ltr"
-          className="relative w-full h-[430px] sm:h-[470px] rounded-2xl canvas-dots border border-white/15 overflow-auto select-none"
+          className="relative w-full h-[430px] sm:h-[470px] rounded-2xl canvas-dots border border-white/15 overflow-auto overscroll-contain select-none"
         >
           <div
             ref={boardRef}

@@ -166,7 +166,7 @@ export default function NodeInspectorPanel() {
                 : "Live Node Inspector"}
             </h3>
           </div>
-          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 max-w-[42vw] sm:max-w-[180px] truncate">
             {selected.dockerImage}
           </span>
         </div>
