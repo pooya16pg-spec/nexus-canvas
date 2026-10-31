@@ -158,3 +158,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .canvas-dots [data-canvas-node] { touch-action: none; user-select: none; -webkit-user-select: none; }
   .nexus-card { overflow-wrap: anywhere; }
 }
+
+@media (max-width: 767px) {
+  .nexus-card button, header button { min-height: 40px; }
+  .nexus-card input, .nexus-card select { min-height: 42px; }
+  .canvas-dots { overscroll-behavior: contain; }
+}
+@media (hover: none) { .btn-nexus:hover { transform: none; } }
