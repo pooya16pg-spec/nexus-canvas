@@ -116,7 +116,7 @@ export default function ExportCodeModal() {
     link.href = url;
     link.download = "nexus-canvas-architecture.json";
     link.click();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleCopyJson = async () => {
