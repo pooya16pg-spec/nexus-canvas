@@ -71,13 +71,15 @@ export default function NodeInspectorPanel() {
                 : "bg-amber-500/20 text-amber-300"
             }`}
           >
-            HA Score: {resilienceScore}/100
+            Heuristic Score: {resilienceScore}/100
           </span>
         </div>
 
         <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 bg-[#02040A] px-3 py-1.5 rounded-xl border border-white/10">
-          <span>Critical Path Latency:</span>
-          <span className="text-cyan-300 font-bold">{totalCriticalPathMs} ms</span>
+          <span>Modeled Critical Path:</span>
+          <span className="text-cyan-300 font-bold">
+            {analysis.criticalPathMs === null ? totalCriticalPathMs : `${totalCriticalPathMs} ms`}
+          </span>
         </div>
 
         {issueCount === 0 ? (
@@ -100,7 +102,7 @@ export default function NodeInspectorPanel() {
                 <span>
                   {lang === "fa"
                     ? `خطر SPOF در «${n.title}»: تعداد پاد (${n.replicas}x) یا بار CPU (${n.cpuLoad}%)!`
-                    : `SPOF Risk on '${n.title}': Replicas (${n.replicas}x) or CPU (${n.cpuLoad}%)!`}
+                    : `Availability / Capacity Risk on '${n.title}': Replicas (${n.replicas}x) or CPU (${n.cpuLoad}%)!`}
                 </span>
               </div>
             ))}
@@ -112,8 +114,8 @@ export default function NodeInspectorPanel() {
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>
                   {lang === "fa"
-                    ? `گلوگاه دیتابیس در «${n.title}»: بار بالا بدون حضور لایه کش Redis!`
-                    : `DB Bottleneck on '${n.title}': High load without Redis Cache layer!`}
+                    ? `گلوگاه دیتابیس در «${n.title}»: بار بالا بدون اتصال مستقیم به یک لایه کش!`
+                    : `DB Cache-Path Warning on '${n.title}': High load without a directly connected cache!`}
                 </span>
               </div>
             ))}
