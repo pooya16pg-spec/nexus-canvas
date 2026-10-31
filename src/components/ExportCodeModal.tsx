@@ -12,14 +12,17 @@ export default function ExportCodeModal() {
 
   if (!isExportModalOpen) return null;
 
-  const serviceNames = new Map(
-    nodes.map((node) => [
+  const serviceNames = new Map<string, string>();
+  nodes.forEach((node) => {
+    serviceNames.set(
       node.id,
-      node.id.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase(),
-    ])
-  );
+      node.id.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()
+    );
+  });
   const serviceKeys = Array.from(serviceNames.values());
-  const hasDuplicateServiceNames = new Set(serviceKeys).size !== serviceKeys.length;
+  const hasDuplicateServiceNames =
+    new Set(serviceKeys).size !== serviceKeys.length ||
+    serviceKeys.some((name) => !name);
   const knownIds = new Set(nodes.map((node) => node.id));
   const invalidEdges = edges.filter(
     (edge) => !knownIds.has(edge.from) || !knownIds.has(edge.to)
@@ -33,8 +36,12 @@ export default function ExportCodeModal() {
     dependencyMap.set(edge.from, deps);
   });
 
-  const indegree = new Map(nodes.map((node) => [node.id, 0]));
-  const outgoing = new Map(nodes.map((node) => [node.id, [] as string[]]));
+  const indegree = new Map<string, number>();
+  const outgoing = new Map<string, string[]>();
+  nodes.forEach((node) => {
+    indegree.set(node.id, 0);
+    outgoing.set(node.id, []);
+  });
   dependencyMap.forEach((deps, from) => {
     deps.forEach((to) => {
       outgoing.get(from)?.push(to);
@@ -112,8 +119,8 @@ export default function ExportCodeModal() {
             <Code2 className="w-5 h-5 text-cyan-400" />
             <h3 className="text-sm font-bold text-white">
               {lang === "fa"
-                ? "خروجی استاندارد Docker Compose با ایمیج‌های واقعی و depends_on"
-                : "Valid Docker Compose Manifest (Real Official Images & depends_on)"}
+                ? "قالب شروع Docker Compose بر اساس گراف"
+                : "Docker Compose Starter Template"}
             </h3>
           </div>
           <button
