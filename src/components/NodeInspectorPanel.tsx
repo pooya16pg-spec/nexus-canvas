@@ -3,6 +3,7 @@
 import React from "react";
 import { useNexusStore } from "../store/useNexusStore";
 import SmartAssetImage from "./SmartAssetImage";
+import { analyzeTopology } from "../lib/topology";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -25,22 +26,28 @@ export default function NodeInspectorPanel() {
   const selected = nodes.find((n) => n.id === selectedNodeId) || nodes[0];
   if (!selected) return null;
 
-  // تحلیلگر جامع گراف وابستگی معماری و تشخیص SPOF (ارتقایافته طبق نقد ChatGPT)
-  const spofNodes = nodes.filter((n) => n.replicas < 2 || n.cpuLoad > 85);
-  const isolatedNodes = nodes.filter(
-    (n) => !edges.some((e) => e.from === n.id || e.to === n.id)
-  );
-  const hasCacheLayer = nodes.some((n) => n.category === "CACHE");
-  const uncachedDbBottlenecks = nodes.filter(
-    (n) => n.category === "DATABASE" && n.throughputRps > 15000 && !hasCacheLayer
-  );
-  const totalCriticalPathMs = nodes
-    .reduce((acc, n) => acc + n.latencyMs, 0)
-    .toFixed(1);
+  const analysis = analyzeTopology(nodes, edges);
+  const {
+    spofNodes,
+    isolatedNodes,
+    unreachableNodes,
+    uncachedDbBottlenecks,
+    invalidEdges,
+    hasCycle,
+  } = analysis;
+  const totalCriticalPathMs =
+    analysis.criticalPathMs === null
+      ? "Cycle detected"
+      : analysis.criticalPathMs.toFixed(1);
 
   const issueCount =
-    spofNodes.length + isolatedNodes.length + uncachedDbBottlenecks.length;
-  const resilienceScore = Math.max(35, 100 - issueCount * 18);
+    spofNodes.length +
+    isolatedNodes.length +
+    unreachableNodes.length +
+    uncachedDbBottlenecks.length +
+    invalidEdges.length +
+    (hasCycle ? 1 : 0);
+  const resilienceScore = Math.max(0, 100 - issueCount * 12);
 
   return (
     <div
@@ -110,6 +117,26 @@ export default function NodeInspectorPanel() {
                 </span>
               </div>
             ))}
+            {unreachableNodes.map((n) => (
+              <div key={`unreachable-${n.id}`} className="p-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] text-amber-200 flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  {lang === "fa"
+                    ? `نود «${n.title}» از ورودی‌های گراف قابل دسترسی نیست.`
+                    : `Node '${n.title}' is not reachable from a gateway/root node.`}
+                </span>
+              </div>
+            ))}
+            {invalidEdges.map((edge) => (
+              <div key={`invalid-${edge.id}`} className="p-2 rounded-xl bg-rose-500/15 border border-rose-400/40 text-[11px] text-rose-200">
+                {lang === "fa" ? `اتصال ${edge.id} به نودی اشاره می‌کند که وجود ندارد.` : `Edge ${edge.id} references a missing node.`}
+              </div>
+            ))}
+            {hasCycle && (
+              <div className="p-2 rounded-xl bg-rose-500/15 border border-rose-400/40 text-[11px] text-rose-200">
+                {lang === "fa" ? "چرخه در وابستگی‌ها وجود دارد؛ مسیر بحرانی DAG قابل محاسبه نیست." : "Dependency cycle detected; a DAG critical path cannot be computed."}
+              </div>
+            )}
             {isolatedNodes.map((n) => (
               <div
                 key={`iso-${n.id}`}
@@ -202,7 +229,7 @@ export default function NodeInspectorPanel() {
               {lang === "fa" ? "تلمتری توپولوژی" : "Topology Telemetry"}
             </span>
             <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-400/40">
-              GRAPH VERIFIED
+              LOCAL GRAPH ANALYSIS
             </span>
           </div>
         </div>
