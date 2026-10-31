@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // @ts-ignore
 import "./globals.css";
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#03040A" };
 
 export const metadata: Metadata = {
   title: "NexusCanvas | Pooya Goodarzi — Spatial System Architecture Studio",
