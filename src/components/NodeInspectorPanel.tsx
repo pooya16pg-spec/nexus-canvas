@@ -76,7 +76,7 @@ export default function NodeInspectorPanel() {
         </div>
 
         <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 bg-[#02040A] px-3 py-1.5 rounded-xl border border-white/10">
-          <span>Cumulative Path Latency:</span>
+          <span>Critical Path Latency:</span>
           <span className="text-cyan-300 font-bold">{totalCriticalPathMs} ms</span>
         </div>
 
@@ -85,8 +85,8 @@ export default function NodeInspectorPanel() {
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
               {lang === "fa"
-                ? "گراف وابستگی پایدار است: بدون نقطه تک‌شکست (SPOF) و دارای لایه کش."
-                : "Dependency graph verified: Zero SPOF & caching layer present."}
+                ? "در بررسی فعلی، خطای ساختاری شناسایی نشد."
+                : "No structural issues detected by the current local checks."}
             </span>
           </div>
         ) : (
