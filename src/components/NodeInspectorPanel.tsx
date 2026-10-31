@@ -3,6 +3,7 @@
 import React from "react";
 import { useNexusStore } from "../store/useNexusStore";
 import SmartAssetImage from "./SmartAssetImage";
+import { analyzeTopology } from "../lib/topology";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -25,22 +26,28 @@ export default function NodeInspectorPanel() {
   const selected = nodes.find((n) => n.id === selectedNodeId) || nodes[0];
   if (!selected) return null;
 
-  // تحلیلگر جامع گراف وابستگی معماری و تشخیص SPOF (ارتقایافته طبق نقد ChatGPT)
-  const spofNodes = nodes.filter((n) => n.replicas < 2 || n.cpuLoad > 85);
-  const isolatedNodes = nodes.filter(
-    (n) => !edges.some((e) => e.from === n.id || e.to === n.id)
-  );
-  const hasCacheLayer = nodes.some((n) => n.category === "CACHE");
-  const uncachedDbBottlenecks = nodes.filter(
-    (n) => n.category === "DATABASE" && n.throughputRps > 15000 && !hasCacheLayer
-  );
-  const totalCriticalPathMs = nodes
-    .reduce((acc, n) => acc + n.latencyMs, 0)
-    .toFixed(1);
+  const analysis = analyzeTopology(nodes, edges);
+  const {
+    spofNodes,
+    isolatedNodes,
+    unreachableNodes,
+    uncachedDbBottlenecks,
+    invalidEdges,
+    hasCycle,
+  } = analysis;
+  const totalCriticalPathMs =
+    analysis.criticalPathMs === null
+      ? "Cycle detected"
+      : analysis.criticalPathMs.toFixed(1);
 
   const issueCount =
-    spofNodes.length + isolatedNodes.length + uncachedDbBottlenecks.length;
-  const resilienceScore = Math.max(35, 100 - issueCount * 18);
+    spofNodes.length +
+    isolatedNodes.length +
+    unreachableNodes.length +
+    uncachedDbBottlenecks.length +
+    invalidEdges.length +
+    (hasCycle ? 1 : 0);
+  const resilienceScore = Math.max(0, 100 - issueCount * 12);
 
   return (
     <div
@@ -64,13 +71,15 @@ export default function NodeInspectorPanel() {
                 : "bg-amber-500/20 text-amber-300"
             }`}
           >
-            HA Score: {resilienceScore}/100
+            Heuristic Score: {resilienceScore}/100
           </span>
         </div>
 
         <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 bg-[#02040A] px-3 py-1.5 rounded-xl border border-white/10">
-          <span>Cumulative Path Latency:</span>
-          <span className="text-cyan-300 font-bold">{totalCriticalPathMs} ms</span>
+          <span>Modeled Critical Path:</span>
+          <span className="text-cyan-300 font-bold">
+            {analysis.criticalPathMs === null ? totalCriticalPathMs : `${totalCriticalPathMs} ms`}
+          </span>
         </div>
 
         {issueCount === 0 ? (
@@ -78,8 +87,8 @@ export default function NodeInspectorPanel() {
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
               {lang === "fa"
-                ? "گراف وابستگی پایدار است: بدون نقطه تک‌شکست (SPOF) و دارای لایه کش."
-                : "Dependency graph verified: Zero SPOF & caching layer present."}
+                ? "در بررسی فعلی، خطای ساختاری شناسایی نشد."
+                : "No structural issues detected by the current local checks."}
             </span>
           </div>
         ) : (
@@ -92,8 +101,8 @@ export default function NodeInspectorPanel() {
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                 <span>
                   {lang === "fa"
-                    ? `خطر SPOF در «${n.title}»: تعداد پاد (${n.replicas}x) یا بار CPU (${n.cpuLoad}%)!`
-                    : `SPOF Risk on '${n.title}': Replicas (${n.replicas}x) or CPU (${n.cpuLoad}%)!`}
+                    ? `ریسک دسترس‌پذیری/ظرفیت در «${n.title}»: تعداد پاد (${n.replicas}x) یا بار CPU (${n.cpuLoad}%)!`
+                    : `Availability / Capacity Risk on '${n.title}': Replicas (${n.replicas}x) or CPU (${n.cpuLoad}%)!`}
                 </span>
               </div>
             ))}
@@ -105,11 +114,31 @@ export default function NodeInspectorPanel() {
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>
                   {lang === "fa"
-                    ? `گلوگاه دیتابیس در «${n.title}»: بار بالا بدون حضور لایه کش Redis!`
-                    : `DB Bottleneck on '${n.title}': High load without Redis Cache layer!`}
+                    ? `گلوگاه دیتابیس در «${n.title}»: بار بالا بدون اتصال مستقیم به یک لایه کش!`
+                    : `DB Cache-Path Warning on '${n.title}': High load without a directly connected cache!`}
                 </span>
               </div>
             ))}
+            {unreachableNodes.map((n) => (
+              <div key={`unreachable-${n.id}`} className="p-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] text-amber-200 flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  {lang === "fa"
+                    ? `نود «${n.title}» از ورودی‌های گراف قابل دسترسی نیست.`
+                    : `Node '${n.title}' is not reachable from a gateway/root node.`}
+                </span>
+              </div>
+            ))}
+            {invalidEdges.map((edge) => (
+              <div key={`invalid-${edge.id}`} className="p-2 rounded-xl bg-rose-500/15 border border-rose-400/40 text-[11px] text-rose-200">
+                {lang === "fa" ? `اتصال ${edge.id} به نودی اشاره می‌کند که وجود ندارد.` : `Edge ${edge.id} references a missing node.`}
+              </div>
+            ))}
+            {hasCycle && (
+              <div className="p-2 rounded-xl bg-rose-500/15 border border-rose-400/40 text-[11px] text-rose-200">
+                {lang === "fa" ? "چرخه در وابستگی‌ها وجود دارد؛ مسیر بحرانی DAG قابل محاسبه نیست." : "Dependency cycle detected; a DAG critical path cannot be computed."}
+              </div>
+            )}
             {isolatedNodes.map((n) => (
               <div
                 key={`iso-${n.id}`}
@@ -202,7 +231,7 @@ export default function NodeInspectorPanel() {
               {lang === "fa" ? "تلمتری توپولوژی" : "Topology Telemetry"}
             </span>
             <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-400/40">
-              GRAPH VERIFIED
+              LOCAL GRAPH ANALYSIS
             </span>
           </div>
         </div>
