@@ -28,12 +28,12 @@ export default function TopBar() {
     setExportModalOpen,
   } = useNexusStore();
 
-  const totalRps
-
   React.useEffect(() => {
     document.documentElement.lang = lang === "fa" ? "fa" : "en";
     document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
-  }, [lang]); = nodes.reduce((acc, n) => acc + n.throughputRps, 0);
+  }, [lang]);
+
+  const totalRps = nodes.reduce((acc, n) => acc + n.throughputRps, 0);
   const avgLatency = (
     nodes.reduce((acc, n) => acc + n.latencyMs, 0) / Math.max(1, nodes.length)
   ).toFixed(1);
