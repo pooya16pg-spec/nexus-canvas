@@ -47,7 +47,7 @@ export default function TopBar() {
   return (
     <div dir={lang === "fa" ? "rtl" : "ltr"} className="z-40">
       {/* نوار وضعیت بالای سیستم */}
-      <div className="bg-[#010206] border-b border-white/10 px-3 lg:px-8 py-1.5 text-[11px] font-mono">
+      <div className="bg-[#010206] border-b border-white/10 px-3 lg:px-8 pt-[calc(0.375rem+env(safe-area-inset-top))] pb-1.5 text-[11px] font-mono">
         <div className="max-w-[1720px] mx-auto flex items-center justify-between gap-4 overflow-x-auto">
           <div className="flex items-center gap-3 shrink-0">
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 font-bold">
