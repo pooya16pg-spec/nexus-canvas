@@ -103,10 +103,30 @@ export default function InteractiveCanvas() {
   }, []);
 
   useEffect(() => {
-    if (!showTeamCursors) return;
-    const t = setInterval(() => setBotTick((prev) => (prev + 1) % Math.max(1, nodes.length)), 2600);
-    return () => clearInterval(t);
-  }, [showTeamCursors, nodes.length]);
+    if (!showTeamCursors || viewMode !== "CANVAS") return;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      if (document.hidden || timer) return;
+      timer = setInterval(
+        () => setBotTick((prev) => (prev + 1) % Math.max(1, nodes.length)),
+        2600
+      );
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [showTeamCursors, nodes.length, viewMode]);
 
   const NODE_W = 210;
   const NODE_H = 108;
@@ -215,6 +235,7 @@ export default function InteractiveCanvas() {
             onClick={deleteSelectedNode}
             className="btn-nexus-danger p-1.5 rounded-xl"
             title="Delete Selected Node"
+            aria-label={lang === "fa" ? "حذف نود انتخاب‌شده" : "Delete selected node"}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -224,6 +245,7 @@ export default function InteractiveCanvas() {
               <button
                 onClick={() => setZoom(zoom - 0.1)}
                 className="btn-nexus p-1 rounded-lg"
+                aria-label={lang === "fa" ? "کوچک‌نمایی بوم" : "Zoom out canvas"}
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
@@ -233,6 +255,7 @@ export default function InteractiveCanvas() {
               <button
                 onClick={() => setZoom(zoom + 0.1)}
                 className="btn-nexus p-1 rounded-lg"
+                aria-label={lang === "fa" ? "بزرگ‌نمایی بوم" : "Zoom in canvas"}
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>

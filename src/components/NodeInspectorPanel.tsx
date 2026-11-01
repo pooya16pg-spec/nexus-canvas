@@ -157,8 +157,8 @@ export default function NodeInspectorPanel() {
       </div>
 
       <div className="nexus-card rounded-2xl border border-white/15 p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-white/10 pb-2">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-start sm:items-center justify-between gap-2 border-b border-white/10 pb-2">
+          <div className="min-w-0 flex-1 flex items-center gap-2">
             <Sliders className="w-4 h-4 text-cyan-400" />
             <h3 className="text-xs font-bold text-white">
               {lang === "fa"
@@ -166,7 +166,7 @@ export default function NodeInspectorPanel() {
                 : "Live Node Inspector"}
             </h3>
           </div>
-          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 max-w-[42vw] sm:max-w-[180px] truncate">
+          <span className="font-mono text-[10px] px-2 py-1 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 max-w-full sm:max-w-[180px] min-w-0 truncate">
             {selected.dockerImage}
           </span>
         </div>
