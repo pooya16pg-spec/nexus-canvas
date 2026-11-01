@@ -235,6 +235,7 @@ export default function InteractiveCanvas() {
             onClick={deleteSelectedNode}
             className="btn-nexus-danger p-1.5 rounded-xl"
             title="Delete Selected Node"
+            aria-label={lang === "fa" ? "حذف نود انتخاب‌شده" : "Delete selected node"}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -244,6 +245,7 @@ export default function InteractiveCanvas() {
               <button
                 onClick={() => setZoom(zoom - 0.1)}
                 className="btn-nexus p-1 rounded-lg"
+                aria-label={lang === "fa" ? "کوچک‌نمایی بوم" : "Zoom out canvas"}
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
@@ -253,6 +255,7 @@ export default function InteractiveCanvas() {
               <button
                 onClick={() => setZoom(zoom + 0.1)}
                 className="btn-nexus p-1 rounded-lg"
+                aria-label={lang === "fa" ? "بزرگ‌نمایی بوم" : "Zoom in canvas"}
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
