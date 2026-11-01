@@ -103,10 +103,30 @@ export default function InteractiveCanvas() {
   }, []);
 
   useEffect(() => {
-    if (!showTeamCursors) return;
-    const t = setInterval(() => setBotTick((prev) => (prev + 1) % Math.max(1, nodes.length)), 2600);
-    return () => clearInterval(t);
-  }, [showTeamCursors, nodes.length]);
+    if (!showTeamCursors || viewMode !== "CANVAS") return;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      if (document.hidden || timer) return;
+      timer = setInterval(
+        () => setBotTick((prev) => (prev + 1) % Math.max(1, nodes.length)),
+        2600
+      );
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [showTeamCursors, nodes.length, viewMode]);
 
   const NODE_W = 210;
   const NODE_H = 108;
